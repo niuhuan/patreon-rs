@@ -1,6 +1,8 @@
-use crate::{Error, Result};
+use crate::{PatreonError, PatreonResult};
+use reqwest::StatusCode;
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::sync::Arc;
 use url::Url;
 
 static BASE_URI: &str = "https://www.patreon.com";
@@ -10,7 +12,7 @@ pub struct PatreonOAuth {
     pub client_id: String,
     pub client_secret: String,
     pub redirect_uri: String,
-    pub agent: reqwest::Client,
+    pub agent: Arc<reqwest::Client>,
 }
 
 impl PatreonOAuth {
@@ -24,7 +26,7 @@ impl PatreonOAuth {
         url.to_string()
     }
 
-    pub async fn get_tokens(&self, code: &str) -> Result<TokensResponse> {
+    pub async fn get_tokens(&self, code: &str) -> PatreonResult<TokensResponse> {
         self.parse_token_request(&{
             let mut params = HashMap::new();
             params.insert("grant_type", "authorization_code");
@@ -37,7 +39,7 @@ impl PatreonOAuth {
         .await
     }
 
-    pub async fn refresh_tokens(&self, refresh_token: &str) -> Result<TokensResponse> {
+    pub async fn refresh_tokens(&self, refresh_token: &str) -> PatreonResult<TokensResponse> {
         self.parse_token_request(&{
             let mut params = HashMap::new();
             params.insert("grant_type", "refresh_token");
@@ -49,26 +51,17 @@ impl PatreonOAuth {
         .await
     }
 
-    async fn parse_token_request(&self, params: &HashMap<&str, &str>) -> Result<TokensResponse> {
+    async fn parse_token_request(
+        &self,
+        params: &HashMap<&str, &str>,
+    ) -> PatreonResult<TokensResponse> {
         let mut url = Url::parse(BASE_URI).unwrap();
         url.set_path("/api/oauth2/token");
         let response = self.agent.post(url).form(params).send().await?;
         let status = response.status();
         let text = response.text().await?;
-        if status.is_success() {
-            Ok(serde_json::from_str(text.as_str())?)
-        } else {
-            Err(Error::Patreon(
-                status,
-                serde_json::from_str::<ErrorResponse>(text.as_str())?.error,
-            ))
-        }
+        de_response(status, text)
     }
-}
-
-#[derive(Serialize, Deserialize)]
-struct ErrorResponse {
-    pub error: String,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -79,4 +72,23 @@ pub struct TokensResponse {
     pub scope: String,
     pub refresh_token: String,
     pub version: String,
+}
+
+#[derive(Serialize, Deserialize)]
+struct ErrorResponse {
+    pub error: String,
+}
+
+fn de_response<T: for<'de> serde::Deserialize<'de>>(
+    status: StatusCode,
+    text: String,
+) -> PatreonResult<T> {
+    if status.is_success() {
+        Ok(serde_json::from_str(text.as_str())?)
+    } else {
+        Err(PatreonError::PatreonOAuth(
+            status,
+            serde_json::from_str::<ErrorResponse>(text.as_str())?.error,
+        ))
+    }
 }
