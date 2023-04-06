@@ -1,6 +1,5 @@
 use crate::{ApiError, PatreonError, PatreonResult};
 use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize};
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use std::sync::Arc;
