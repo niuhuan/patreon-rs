@@ -1,5 +1,6 @@
 use crate::{ApiError, PatreonError, PatreonResult};
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use std::sync::Arc;
@@ -25,8 +26,13 @@ impl PatreonApi {
         self.call_data(self.identity_request(None)).await
     }
 
-    pub async fn identity_and_member(&self) -> PatreonResult<(User, Vec<Member>)> {
+    pub async fn identity_include_member(&self) -> PatreonResult<(User, Vec<Member>)> {
         self.call_data_and_include(self.identity_request(IdentityIncldue::Memberships))
+            .await
+    }
+
+    pub async fn identity_include_campaign(&self) -> PatreonResult<(User, Vec<Campaign>)> {
+        self.call_data_and_include(self.identity_request(IdentityIncldue::Campaign))
             .await
     }
 
@@ -90,14 +96,14 @@ impl PatreonApi {
 
     async fn call_data_and_include<
         D: for<'de> serde::Deserialize<'de>,
-        I: for<'de> serde::Deserialize<'de>,
+        I: for<'de> serde::Deserialize<'de> + Default,
     >(
         &self,
         request: reqwest::RequestBuilder,
     ) -> PatreonResult<(D, Vec<I>)> {
         let json = self.api_call(request).await?;
         let response = serde_json::from_str::<DocResponseInclude<D, I>>(json.as_str())?;
-        Ok((response.data, response.include))
+        Ok((response.data, response.included))
     }
 }
 
@@ -109,7 +115,9 @@ struct DocResponse<D> {
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 struct DocResponseInclude<D, I> {
     data: D,
-    include: Vec<I>,
+    #[serde(default)]
+    // if not default and identity?include=campaign and not has it access in scopes be "missing field `included`"
+    included: Vec<I>,
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -122,6 +130,7 @@ pub struct ApiDocument<A> {
 
 pub type User = ApiDocument<UserAttributes>;
 pub type Member = ApiDocument<MemberAttributes>;
+pub type Campaign = ApiDocument<CampaignAttributes>;
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct UserAttributes {
@@ -157,6 +166,37 @@ pub struct MemberAttributes {
     pub pledge_cadence: i64,
     pub pledge_relationship_start: DateTime<Utc>,
     pub will_pay_amount_cents: i64,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct CampaignAttributes {
+    pub created_at: DateTime<Utc>,
+    pub creation_name: String,
+    pub discord_server_id: Option<String>,
+    pub google_analytics_id: Option<String>,
+    pub has_rss: bool,
+    pub has_sent_rss_notify: bool,
+    pub image_small_url: String,
+    pub image_url: Option<String>,
+    pub is_charged_immediately: bool,
+    pub is_monthly: bool,
+    pub is_nsfw: bool,
+    pub main_video_embed: Option<String>,
+    pub main_video_url: Option<String>,
+    pub one_liner: Option<String>,
+    pub patron_count: i64,
+    pub pay_per_name: String,
+    pub pledge_url: String,
+    pub published_at: Option<DateTime<Utc>>,
+    pub rss_artwork_url: Option<String>,
+    pub rss_feed_title: Option<String>,
+    pub show_earnings: Option<bool>,
+    pub summary: Option<String>,
+    pub thanks_embed: Option<String>,
+    pub thanks_msg: Option<String>,
+    pub thanks_video_url: Option<String>,
+    pub url: String,
+    pub vanity: String,
 }
 
 #[derive(Serialize, Deserialize)]

@@ -35,4 +35,4 @@ async fn example() {
   - [x] Current user 
   - [x] Identity
   - [x] Identity include Memberships
-  - [ ] Identity include Campaign
+  - [x] Identity include Campaign
