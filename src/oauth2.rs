@@ -16,10 +16,14 @@ pub struct PatreonOAuth {
 }
 
 impl PatreonOAuth {
-    pub fn get_authorization_url(&self) -> String {
+    pub fn get_authorization_url(&self, scope: &str) -> String {
         let mut url = Url::parse(BASE_URI).unwrap();
         url.set_path("/oauth2/authorize");
+        if !scope.is_empty() {
+            url.query_pairs_mut().append_pair("scope", scope);
+        }
         url.query_pairs_mut()
+            .append_pair("scope ", "campaigns")
             .append_pair("response_type", "code")
             .append_pair("client_id", self.client_id.as_str())
             .append_pair("redirect_uri", self.redirect_uri.as_str());

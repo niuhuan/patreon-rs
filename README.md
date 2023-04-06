@@ -32,4 +32,7 @@ async fn example() {
   - [x] Get tokens from code
   - [x] Refresh tokens
 - [x] Api
-  - [x] User info
+  - [x] Current user 
+  - [x] Identity
+  - [x] Identity include Memberships
+  - [ ] Identity include Campaign

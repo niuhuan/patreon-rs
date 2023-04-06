@@ -49,7 +49,7 @@ impl From<serde_json::Error> for PatreonError {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct ApiError {
-    pub code: i64,
+    pub code: Option<i64>,
     pub code_name: String,
     pub detail: String,
     pub id: String,
@@ -60,7 +60,7 @@ pub struct ApiError {
 impl Display for ApiError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str("ApiError(")?;
-        write!(f, "code : {}, ", self.code)?;
+        write!(f, "code : {:?}, ", self.code)?;
         write!(f, "code_name : {}, ", self.code_name)?;
         write!(f, "detail : {}, ", self.detail)?;
         write!(f, "id : {}, ", self.id)?;
