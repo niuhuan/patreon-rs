@@ -5,7 +5,8 @@ fn main() {
     println!(
         "{}",
         oauth.get_authorization_url(
-            "identity identity[email] identity.memberships campaigns campaigns.members"
+            "identity identity[email] identity.memberships campaigns campaigns.members",
+            "",
         )
     );
 }
