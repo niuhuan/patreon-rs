@@ -1,7 +1,7 @@
 PATREON
 =======
 
-A patreon client
+A patreon client crate for rust.
 
 ```rust
 async fn example() {
@@ -21,7 +21,14 @@ async fn example() {
         access_token: env!("ACCESS_TOKEN").to_string(),
         ..Default::default()
     };
-    println!("{:?}", api.current_user().await);
+    println!("{:?}", api.ident().await);
+  
+    // webhook
+    let webhook = Webhook {
+        webhook_secret,
+    };
+    webhook.check_signature(...);
+    webhook.parse_event(...);
 }
 ```
 
@@ -36,3 +43,6 @@ async fn example() {
   - [x] Identity
   - [x] Identity include Memberships
   - [x] Identity include Campaign
+- [x] Webhook
+  - [x] Check check_signature
+  - [x] Parse

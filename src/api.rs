@@ -1,7 +1,6 @@
 use crate::{ApiError, PatreonError, PatreonResult};
 use chrono::{DateTime, Utc};
-use serde_derive::Deserialize;
-use serde_derive::Serialize;
+use serde_derive::{Deserialize, Serialize};
 use std::sync::Arc;
 use url::Url;
 
@@ -25,7 +24,7 @@ impl PatreonApi {
         self.call_data(self.identity_request(None)).await
     }
 
-    pub async fn identity_include_member(&self) -> PatreonResult<(User, Vec<Member>)> {
+    pub async fn identity_include_memberships(&self) -> PatreonResult<(User, Vec<Member>)> {
         self.call_data_and_include(self.identity_request(IdentityIncldue::Memberships))
             .await
     }
@@ -90,7 +89,7 @@ impl PatreonApi {
         request: reqwest::RequestBuilder,
     ) -> PatreonResult<T> {
         let json = self.api_call(request).await?;
-        Ok(serde_json::from_str::<DocResponse<T>>(json.as_str())?.data)
+        DocResponse::parse(json.as_str())
     }
 
     async fn call_data_and_include<
@@ -107,12 +106,21 @@ impl PatreonApi {
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-struct DocResponse<D> {
+pub(crate) struct DocResponse<D> {
     data: D,
 }
 
+impl<T> DocResponse<T>
+where
+    T: for<'de> serde::Deserialize<'de>,
+{
+    pub(crate) fn parse(response: impl AsRef<[u8]>) -> PatreonResult<T> {
+        Ok(serde_json::from_slice::<DocResponse<T>>(response.as_ref())?.data)
+    }
+}
+
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-struct DocResponseInclude<D, I> {
+pub(crate) struct DocResponseInclude<D, I> {
     data: D,
     #[serde(default)]
     // if not default and identity?include=campaign and not has it access in scopes be "missing field `included`"
@@ -296,3 +304,15 @@ enum_str!(PatronStatus {
     DeclinedPatron("declined_patron"),
     FormerPatron("former_patron"),
 });
+
+pub type Pledge = ApiDocument<PledgeAttributes>;
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct PledgeAttributes {
+    pub amount_cents: i64,
+    pub created_at: DateTime<Utc>,
+    pub currency: String,
+    pub declined_since: Option<DateTime<Utc>>,
+    pub patron_pays_fees: bool,
+    pub pledge_cap_cents: i64,
+}

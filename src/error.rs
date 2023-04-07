@@ -10,6 +10,7 @@ pub enum PatreonError {
     SerdeJson(serde_json::Error),
     PatreonOAuth(StatusCode, String),
     PatreonApi(StatusCode, Vec<ApiError>),
+    Message(String),
 }
 
 impl Display for PatreonError {
@@ -28,6 +29,9 @@ impl Display for PatreonError {
                 }
                 f.write_str(" ] }")?;
                 Ok(())
+            }
+            PatreonError::Message(msg) => {
+                write!(f, "Message ( {msg} ) ,")
             }
         }
     }
