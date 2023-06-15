@@ -64,6 +64,26 @@ impl PatreonApi {
         self.agent.get(url)
     }
 
+    pub async fn webhooks(&self) -> PatreonResult<String> {
+        let mut url = Url::parse(BASE_URI).unwrap();
+        url.set_path("api/oauth2/v2/webhooks");
+        self.api_call(self.webhooks_request(None)).await
+    }
+
+    fn webhooks_request(
+        &self,
+        include: impl Into<Option<WebhookIncldue>>,
+    ) -> reqwest::RequestBuilder {
+        let mut url = Url::parse(BASE_URI).unwrap();
+        url.set_path("api/oauth2/v2/webhooks");
+        let include = include.into();
+        if let Some(include) = include {
+            url.query_pairs_mut()
+                .append_pair("include", include.as_str());
+        }
+        self.agent.get(url)
+    }
+
     async fn api_call(&self, request: reqwest::RequestBuilder) -> PatreonResult<String> {
         let request = request
             .header("Authorization", format!("Bearer {}", self.access_token))
@@ -316,3 +336,8 @@ pub struct PledgeAttributes {
     pub patron_pays_fees: bool,
     pub pledge_cap_cents: i64,
 }
+
+enum_str!(WebhookIncldue {
+    Client("client"),
+    Campaign("campaign"),
+});
