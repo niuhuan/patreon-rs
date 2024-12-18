@@ -1,6 +1,6 @@
 [package]
 name = "patreon"
-version = "0.1.5"
+version = "0.1.6"
 edition = "2021"
 description = "Patreon client"
 license = "MIT"
