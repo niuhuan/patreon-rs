@@ -78,6 +78,7 @@ pub struct TokensResponse {
     pub token_type: String,
     pub scope: String,
     pub refresh_token: String,
+    #[serde(default)]
     pub version: String,
 }
 
