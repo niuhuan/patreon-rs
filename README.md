@@ -56,23 +56,6 @@ patreon = { version = "0.2", default-features = false, features = ["rustls"] }
 | `PatreonUserClient` | Third-party apps acting on behalf of a user | OAuth user access token |
 | `PatreonCreatorClient` | Server-side access for a creator | Creator access token from Patreon developer portal |
 
-## Environment variables (for examples)
-
-The examples under `examples/` read credentials from environment variables:
-
-- `CLIENT_ID`
-- `CLIENT_SECRET`
-- `REDIRECT_URL`
-- `USER_ACCESS_TOKEN`
-- `CREATOR_ACCESS_TOKEN`
-
-Some examples also require additional variables (the program will tell you via `expect(...)`):
-
-- `OAUTH_CODE`, `REFRESH_TOKEN`
-- `PORT` (used by `oauth_localhost_login`, default: `8080`)
-- `CAMPAIGN_ID`, `MEMBER_ID`, `POST_ID`
-- `WEBHOOK_URI`
-
 ## Quick start
 
 ### OAuth (authorization URL, exchange code, refresh token)
@@ -179,7 +162,24 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ## Examples
 
-Run any example with:
+### Environment variables (for examples)
+
+The examples under `examples/` read credentials from environment variables:
+
+- `CLIENT_ID`
+- `CLIENT_SECRET`
+- `REDIRECT_URL`
+- `USER_ACCESS_TOKEN`
+- `CREATOR_ACCESS_TOKEN`
+
+Some examples also require additional variables (the program will tell you via `expect(...)`):
+
+- `OAUTH_CODE`, `REFRESH_TOKEN`
+- `PORT` (used by `oauth_localhost_login`, default: `8080`)
+- `CAMPAIGN_ID`, `MEMBER_ID`, `POST_ID`
+- `WEBHOOK_URI`
+
+## Run any example with:
 
 `cargo run --example <name>`
 
