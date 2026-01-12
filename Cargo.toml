@@ -1,29 +1,27 @@
 [package]
 name = "patreon"
-version = "0.1.6"
-edition = "2021"
-description = "Patreon client"
-license = "MIT"
-repository = "https://github.com/niuhuan/patreon-rs"
-
-[dependencies]
-chrono = { version = "0.4", features = ["serde"] }
-hex = "0.4"
-hmac = "0.12"
-md-5 = "0.10"
-reqwest = { version = "0.11", default-features = false }
-serde = "1.0"
-serde_derive = "1.0"
-serde_json = "1.0"
-sha2 = "0.10"
-tracing = "0.1"
-url = "2"
+version = "0.2.1"
+edition = "2024"
 
 [features]
+# Default to the system TLS stack (native-tls).
 default = ["native-tls"]
-native-tls = ["reqwest/default-tls"]
-native-tls-vendored = ["reqwest/native-tls-vendored", "native-tls"]
-rustls = ["reqwest/rustls-tls-native-roots", "reqwest/rustls", "reqwest/rustls-tls", "reqwest/__rustls", "reqwest/hyper-rustls"]
 
-[dev-dependencies]
-tokio = { version = "1.27", features = ["full"] }
+# Use reqwest's default TLS backend (native-tls).
+native-tls = ["reqwest/native-tls"]
+
+# Use rustls (reqwest's TLS backend).
+rustls = ["reqwest/rustls"]
+
+
+[dependencies]
+chrono = { version = "0.4.42", features = ["serde"] }
+hex = "0.4.3"
+hmac = "0.12.1"
+reqwest = { version = "0.13.1", default-features = false, features = ["form", "json", "http2"] }
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.149"
+sha2 = "0.10.9"
+thiserror = "2.0.17"
+tokio = { version = "1.49.0", features = ["full"] }
+urlencoding = "2.1.3"
